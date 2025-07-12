@@ -10,10 +10,12 @@ import {
   PencilIcon,
   TrashIcon,
   PlusIcon,
-  SparklesIcon
+  SparklesIcon,
+  UserPlusIcon
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import InviteModal from './InviteModal';
 
 const TripDetail = () => {
   const { tripId } = useParams();
