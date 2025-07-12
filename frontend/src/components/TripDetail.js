@@ -207,6 +207,13 @@ const TripDetail = () => {
           
           <div className="flex space-x-2">
             <button
+              onClick={() => setShowInviteModal(true)}
+              className="btn btn-success"
+            >
+              <UserPlusIcon className="h-4 w-4 mr-1" />
+              Invite
+            </button>
+            <button
               onClick={() => navigate(`/trip/${trip.id}/edit`)}
               className="btn btn-secondary"
             >
