@@ -415,20 +415,64 @@ async def create_trip(trip: TripBase, current_user: Dict = Depends(get_current_u
     }
     result = db.trips.insert_one(trip_doc)
     
+    # Get AI suggestions for the newly created trip
+    trip_id = str(result.inserted_id)
+    destination = f"{trip.destination_city}, {trip.destination_country}" if trip.destination_city and trip.destination_country else None
+    ai_suggestions = []
+    
+    if destination:
+        try:
+            # Get activity suggestions based on destination
+            activity_suggestions = await get_activity_suggestions(destination)
+            
+            # If we have trip description, get more personalized suggestions
+            if trip.description:
+                context = f"Trip to {destination}. {trip.description}"
+                personalized_suggestions = await get_personalized_suggestions(context)
+                ai_suggestions = {
+                    "destination_activities": activity_suggestions,
+                    "personalized_recommendations": personalized_suggestions
+                }
+            else:
+                ai_suggestions = {
+                    "destination_activities": activity_suggestions,
+                    "personalized_recommendations": []
+                }
+            
+            # Store AI suggestions with the trip
+            db.trips.update_one(
+                {"_id": result.inserted_id},
+                {"$set": {"ai_suggestions": ai_suggestions, "updated_at": datetime.utcnow()}}
+            )
+            
+        except Exception as e:
+            print(f"Error generating AI suggestions: {e}")
+            # Continue without suggestions if AI fails
+    
     # Broadcast to WebSocket connections
     await manager.broadcast_to_trip(
-        json.dumps({"type": "trip_created", "trip_id": str(result.inserted_id)}),
-        str(result.inserted_id)
+        json.dumps({
+            "type": "trip_created", 
+            "trip_id": trip_id,
+            "has_suggestions": bool(ai_suggestions)
+        }),
+        trip_id
     )
     
-    return {
-        "id": str(result.inserted_id),
+    trip_response = {
+        "id": trip_id,
         **trip.dict(),
         "created_by": current_user["id"],
         "participants": [current_user["id"]],
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow()
     }
+    
+    # Add AI suggestions to response if available
+    if ai_suggestions:
+        trip_response["ai_suggestions"] = ai_suggestions
+    
+    return trip_response
 
 @app.get("/api/trips", response_model=List[Trip])
 async def get_trips(current_user: Dict = Depends(get_current_user)):
