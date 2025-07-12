@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { XMarkIcon, UserPlusIcon, LinkIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, UserPlusIcon, LinkIcon, EnvelopeIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import api from '../services/authService';
 
