@@ -537,6 +537,45 @@ async def suggest_activities(destination_data: Dict[str, Any], current_user: Dic
     suggestions = await get_activity_suggestions(destination_data.get("destination", ""))
     return {"suggestions": suggestions}
 
+@app.post("/api/trips/{trip_id}/suggestions")
+async def get_trip_suggestions(trip_id: str, current_user: Dict = Depends(get_current_user)):
+    """Get AI suggestions for a specific trip"""
+    trip = db.trips.find_one({"_id": ObjectId(trip_id), "participants": current_user["id"]})
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    
+    destination = f"{trip.get('destination_city')}, {trip.get('destination_country')}" if trip.get('destination_city') and trip.get('destination_country') else None
+    
+    if not destination:
+        raise HTTPException(status_code=400, detail="Trip must have destination information for suggestions")
+    
+    try:
+        # Get activity suggestions based on destination
+        activity_suggestions = await get_activity_suggestions(destination)
+        
+        # Get personalized suggestions if trip has description
+        personalized_suggestions = []
+        if trip.get('description'):
+            context = f"Trip to {destination}. {trip['description']}"
+            personalized_suggestions = await get_personalized_suggestions(context)
+        
+        suggestions = {
+            "destination_activities": activity_suggestions,
+            "personalized_recommendations": personalized_suggestions,
+            "destination": destination
+        }
+        
+        # Update trip with new suggestions
+        db.trips.update_one(
+            {"_id": ObjectId(trip_id)},
+            {"$set": {"ai_suggestions": suggestions, "updated_at": datetime.utcnow()}}
+        )
+        
+        return {"suggestions": suggestions}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate suggestions: {str(e)}")
+
 # WebSocket endpoint
 @app.websocket("/ws/{trip_id}")
 async def websocket_endpoint(websocket: WebSocket, trip_id: str):
