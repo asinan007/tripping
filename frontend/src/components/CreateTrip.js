@@ -21,7 +21,10 @@ const CreateTrip = () => {
     destination_city: '',
     destination_country: '',
     start_date: null,
-    end_date: null
+    end_date: null,
+    has_tickets: false,
+    departure_city: '',
+    departure_country: ''
   });
 
   const handleInputChange = (e) => {
