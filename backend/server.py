@@ -168,11 +168,10 @@ def create_jwt_token(user_id: str) -> str:
 
 def verify_jwt_token(token: str) -> Optional[str]:
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        from jose import jwt as jose_jwt
+        payload = jose_jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         return payload.get("user_id")
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.JWTError:
+    except Exception:
         return None
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
