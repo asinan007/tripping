@@ -14,6 +14,7 @@ const CreateTrip = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [tripSuggestions, setTripSuggestions] = useState(null);
   const [createdTrip, setCreatedTrip] = useState(null);
+  const [addingActivities, setAddingActivities] = useState(new Set());
   const [formData, setFormData] = useState({
     title: '',
     description: '',
