@@ -413,6 +413,93 @@ async def social_auth(user_data: Dict):
 async def get_current_user_info(current_user: Dict = Depends(get_current_user)):
     return current_user
 
+@app.get("/api/invitations/pending")
+async def get_pending_invitations(current_user: Dict = Depends(get_current_user)):
+    """Get pending invitations for the current user"""
+    invitations = db.invitations.find({
+        "invitee_email": current_user["email"],
+        "status": "pending"
+    })
+    
+    result = []
+    for invitation in invitations:
+        trip = db.trips.find_one({"_id": ObjectId(invitation["trip_id"])})
+        inviter = db.users.find_one({"_id": ObjectId(invitation["inviter_id"])})
+        
+        if trip and inviter:
+            result.append({
+                "invitation_id": str(invitation["_id"]),
+                "trip": {
+                    "id": str(trip["_id"]),
+                    "title": trip["title"],
+                    "description": trip.get("description", ""),
+                    "destination_city": trip.get("destination_city"),
+                    "destination_country": trip.get("destination_country"),
+                    "start_date": trip.get("start_date"),
+                    "end_date": trip.get("end_date")
+                },
+                "inviter": {
+                    "name": inviter["name"],
+                    "email": inviter["email"]
+                },
+                "message": invitation.get("message", ""),
+                "created_at": invitation["created_at"]
+            })
+    
+    return result
+
+@app.post("/api/invitations/{invitation_id}/respond")
+async def respond_to_invitation(
+    invitation_id: str, 
+    response_data: Dict[str, Any], 
+    current_user: Dict = Depends(get_current_user)
+):
+    """Accept or reject an invitation"""
+    invitation = db.invitations.find_one({
+        "_id": ObjectId(invitation_id),
+        "invitee_email": current_user["email"],
+        "status": "pending"
+    })
+    
+    if not invitation:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+    
+    action = response_data.get("action")  # "accept" or "reject"
+    
+    if action == "accept":
+        # Add user to trip participants
+        db.trips.update_one(
+            {"_id": ObjectId(invitation["trip_id"])},
+            {"$addToSet": {"participants": current_user["id"]}}
+        )
+        
+        # Update invitation status
+        db.invitations.update_one(
+            {"_id": ObjectId(invitation_id)},
+            {"$set": {"status": "accepted", "responded_at": datetime.utcnow()}}
+        )
+        
+        trip = db.trips.find_one({"_id": ObjectId(invitation["trip_id"])})
+        return {
+            "message": "Invitation accepted successfully",
+            "trip": {
+                "id": str(trip["_id"]),
+                "title": trip["title"]
+            }
+        }
+    
+    elif action == "reject":
+        # Update invitation status
+        db.invitations.update_one(
+            {"_id": ObjectId(invitation_id)},
+            {"$set": {"status": "rejected", "responded_at": datetime.utcnow()}}
+        )
+        
+        return {"message": "Invitation rejected"}
+    
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action. Use 'accept' or 'reject'")
+
 # Trip routes
 @app.post("/api/trips", response_model=Trip)
 async def create_trip(trip: TripBase, current_user: Dict = Depends(get_current_user)):
