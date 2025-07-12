@@ -25,6 +25,7 @@ const TripDetail = () => {
   const [trip, setTrip] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   useEffect(() => {
     const fetchTrip = async () => {
