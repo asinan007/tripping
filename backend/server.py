@@ -89,6 +89,9 @@ class TripBase(BaseModel):
     end_date: Optional[datetime] = None
     destination_country: Optional[str] = None
     destination_city: Optional[str] = None
+    has_tickets: Optional[bool] = False
+    departure_city: Optional[str] = None
+    departure_country: Optional[str] = None
 
 class Trip(TripBase):
     id: str
