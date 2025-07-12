@@ -210,13 +210,13 @@ const Dashboard = () => {
         </Link>
 
         <div className="bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg shadow-md p-6 text-white">
-          <div className="flex items-center">
+          <Link to="/photo-management" className="flex items-center">
             <PhotoIcon className="h-8 w-8 mr-4" />
             <div>
               <div className="text-lg font-semibold">Photo Memories</div>
               <div className="text-sm opacity-90">Create beautiful collages</div>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
 
