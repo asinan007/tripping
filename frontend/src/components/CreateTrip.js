@@ -460,7 +460,7 @@ const CreateTrip = () => {
               disabled={loading}
               className="btn btn-primary"
             >
-              {loading ? 'Creating Trip...' : 'Create Trip with AI Suggestions'}
+              {loading ? 'Planning Trip...' : 'Plan Trip with AI Suggestions'}
             </button>
           </div>
         </form>
@@ -477,6 +477,7 @@ const CreateTrip = () => {
             <ul className="text-sm text-blue-700 space-y-1">
               <li>• Add destination details to get activity suggestions automatically</li>
               <li>• Include trip description for personalized recommendations and travel advisories</li>
+              <li>• Get flight suggestions if you haven't booked tickets yet</li>
               <li>• Add suggested activities directly to your itinerary</li>
               <li>• Invite friends and family to collaborate on planning</li>
               <li>• Upload photos during your trip to create beautiful memories</li>
