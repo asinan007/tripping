@@ -33,6 +33,7 @@ function App() {
                   <Route path="/trip/:tripId" element={<ProtectedRoute><TripDetail /></ProtectedRoute>} />
                   <Route path="/ai-planning" element={<ProtectedRoute><AIPlanning /></ProtectedRoute>} />
                   <Route path="/trip/:tripId/photos" element={<ProtectedRoute><PhotoGallery /></ProtectedRoute>} />
+                  <Route path="/photo-management" element={<ProtectedRoute><PhotoGallery /></ProtectedRoute>} />
                   <Route path="/" element={<Navigate to="/dashboard" />} />
                 </Routes>
               </main>
