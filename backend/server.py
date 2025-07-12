@@ -536,7 +536,159 @@ async def delete_trip(trip_id: str, current_user: Dict = Depends(get_current_use
     
     return {"message": "Trip deleted successfully"}
 
-# AI suggestion routes
+# Trip invitation routes
+@app.post("/api/trips/{trip_id}/invite")
+async def invite_to_trip(
+    trip_id: str, 
+    invitation_data: Dict[str, Any], 
+    current_user: Dict = Depends(get_current_user)
+):
+    """Invite someone to a trip via email"""
+    trip = db.trips.find_one({"_id": ObjectId(trip_id), "participants": current_user["id"]})
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    
+    invitee_email = invitation_data.get("email")
+    message = invitation_data.get("message", "")
+    
+    if not invitee_email:
+        raise HTTPException(status_code=400, detail="Email is required")
+    
+    # Check if user is already invited or is a participant
+    existing_invitation = db.invitations.find_one({
+        "trip_id": trip_id,
+        "invitee_email": invitee_email,
+        "status": {"$in": ["pending", "accepted"]}
+    })
+    
+    if existing_invitation:
+        raise HTTPException(status_code=400, detail="User is already invited or participating")
+    
+    # Create invitation
+    invitation_doc = {
+        "trip_id": trip_id,
+        "inviter_id": current_user["id"],
+        "invitee_email": invitee_email,
+        "message": message,
+        "status": "pending",
+        "created_at": datetime.utcnow(),
+        "invite_token": str(uuid.uuid4())
+    }
+    
+    result = db.invitations.insert_one(invitation_doc)
+    
+    # In a real app, you would send an email here
+    # For now, we'll return the invitation details
+    
+    return {
+        "invitation_id": str(result.inserted_id),
+        "trip_title": trip["title"],
+        "invitee_email": invitee_email,
+        "invite_link": f"/invite/{invitation_doc['invite_token']}",
+        "status": "pending"
+    }
+
+@app.get("/api/trips/{trip_id}/invitations")
+async def get_trip_invitations(trip_id: str, current_user: Dict = Depends(get_current_user)):
+    """Get all invitations for a trip"""
+    trip = db.trips.find_one({"_id": ObjectId(trip_id), "participants": current_user["id"]})
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    
+    invitations = db.invitations.find({"trip_id": trip_id})
+    return [
+        {
+            "id": str(inv["_id"]),
+            "invitee_email": inv["invitee_email"],
+            "status": inv["status"],
+            "created_at": inv["created_at"],
+            "message": inv.get("message", "")
+        }
+        for inv in invitations
+    ]
+
+@app.post("/api/invitations/{invite_token}/accept")
+async def accept_invitation(invite_token: str, current_user: Dict = Depends(get_current_user)):
+    """Accept a trip invitation"""
+    invitation = db.invitations.find_one({"invite_token": invite_token, "status": "pending"})
+    if not invitation:
+        raise HTTPException(status_code=404, detail="Invitation not found or already processed")
+    
+    # Add user to trip participants
+    db.trips.update_one(
+        {"_id": ObjectId(invitation["trip_id"])},
+        {"$addToSet": {"participants": current_user["id"]}}
+    )
+    
+    # Update invitation status
+    db.invitations.update_one(
+        {"_id": invitation["_id"]},
+        {"$set": {"status": "accepted", "accepted_at": datetime.utcnow()}}
+    )
+    
+    trip = db.trips.find_one({"_id": ObjectId(invitation["trip_id"])})
+    
+    return {
+        "message": "Invitation accepted successfully",
+        "trip": {
+            "id": str(trip["_id"]),
+            "title": trip["title"],
+            "description": trip.get("description")
+        }
+    }
+
+@app.get("/api/trips/{trip_id}/share-link")
+async def get_trip_share_link(trip_id: str, current_user: Dict = Depends(get_current_user)):
+    """Get a shareable link for the trip"""
+    trip = db.trips.find_one({"_id": ObjectId(trip_id), "participants": current_user["id"]})
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    
+    # Generate or get existing share token
+    share_token = trip.get("share_token")
+    if not share_token:
+        share_token = str(uuid.uuid4())
+        db.trips.update_one(
+            {"_id": ObjectId(trip_id)},
+            {"$set": {"share_token": share_token}}
+        )
+    
+    return {
+        "share_link": f"/join/{share_token}",
+        "trip_title": trip["title"]
+    }
+
+@app.post("/api/trips/join/{share_token}")
+async def join_trip_via_link(share_token: str, current_user: Dict = Depends(get_current_user)):
+    """Join a trip via share link"""
+    trip = db.trips.find_one({"share_token": share_token})
+    if not trip:
+        raise HTTPException(status_code=404, detail="Invalid share link")
+    
+    # Check if user is already a participant
+    if current_user["id"] in trip.get("participants", []):
+        return {
+            "message": "You are already a participant in this trip",
+            "trip": {
+                "id": str(trip["_id"]),
+                "title": trip["title"]
+            }
+        }
+    
+    # Add user to trip participants
+    db.trips.update_one(
+        {"_id": trip["_id"]},
+        {"$addToSet": {"participants": current_user["id"]}}
+    )
+    
+    return {
+        "message": "Successfully joined the trip",
+        "trip": {
+            "id": str(trip["_id"]),
+            "title": trip["title"],
+            "description": trip.get("description")
+        }
+    }
 @app.post("/api/ai/destinations")
 async def suggest_destinations(preferences: Dict[str, Any], current_user: Dict = Depends(get_current_user)):
     suggestions = await get_destination_suggestions(preferences.get("preferences", ""))
