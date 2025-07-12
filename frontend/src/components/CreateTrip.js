@@ -221,8 +221,40 @@ const CreateTrip = () => {
             </p>
           </div>
 
-          <div className="px-6 py-4 space-y-6">
-            {/* Destination Activities */}
+          <div className="px-6 py-4 space-y-8">
+            {/* Flight Suggestions */}
+            {!formData.has_tickets && generateFlightSearchUrl() && (
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <GlobeAltIcon className="h-5 w-5 mr-2 text-blue-600" />
+                  Flight Suggestions
+                </h2>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start space-x-3">
+                    <GlobeAltIcon className="h-6 w-6 text-blue-600 mt-1" />
+                    <div className="flex-1">
+                      <h3 className="font-medium text-blue-900 mb-2">
+                        Flights from {formData.departure_city} to {formData.destination_city}
+                      </h3>
+                      <p className="text-sm text-blue-800 mb-3">
+                        Find the best flight deals for your trip dates. We'll search Google Flights for the most current prices and schedules.
+                      </p>
+                      <a
+                        href={generateFlightSearchUrl()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-primary inline-flex items-center"
+                      >
+                        <GlobeAltIcon className="h-4 w-4 mr-2" />
+                        Search Flights on Google
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Activities Section */}
             {tripSuggestions.destination_activities && tripSuggestions.destination_activities.length > 0 && (
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -230,22 +262,49 @@ const CreateTrip = () => {
                   Things to Do in {formData.destination_city}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {tripSuggestions.destination_activities.slice(0, 6).map((activity, index) => (
+                  {tripSuggestions.destination_activities.map((activity, index) => (
                     <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <h3 className="font-medium text-gray-900 mb-2">{activity.name}</h3>
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-medium text-gray-900 flex-1 mr-2">{activity.name}</h3>
+                        <button
+                          onClick={() => handleAddToItinerary(activity)}
+                          disabled={addingActivities.has(activity.name)}
+                          className="btn btn-primary btn-sm flex items-center shrink-0"
+                        >
+                          {addingActivities.has(activity.name) ? (
+                            <>
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                              Adding...
+                            </>
+                          ) : (
+                            <>
+                              <PlusIcon className="h-3 w-3 mr-1" />
+                              Add to Itinerary
+                            </>
+                          )}
+                        </button>
+                      </div>
                       <p className="text-sm text-gray-600 mb-3">{activity.description}</p>
+                      {activity.location && (
+                        <p className="text-xs text-gray-500 mb-2">📍 {activity.location}</p>
+                      )}
                       <div className="flex flex-wrap gap-2">
                         <span className={`inline-flex px-2 py-1 text-xs rounded-full border ${getCategoryColor(activity.category)}`}>
                           {activity.category}
                         </span>
                         {activity.duration && (
                           <span className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">
-                            {activity.duration}
+                            ⏱️ {activity.duration}
                           </span>
                         )}
                         {activity.cost && (
                           <span className="inline-flex px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                            {activity.cost}
+                            💰 {activity.cost}
+                          </span>
+                        )}
+                        {activity.bestTime && (
+                          <span className="inline-flex px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                            🕐 {activity.bestTime}
                           </span>
                         )}
                       </div>
@@ -255,28 +314,35 @@ const CreateTrip = () => {
               </div>
             )}
 
-            {/* Personalized Recommendations */}
+            {/* Travel Advisories & Tips Section */}
             {tripSuggestions.personalized_recommendations && tripSuggestions.personalized_recommendations.length > 0 && (
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <SparklesIcon className="h-5 w-5 mr-2 text-purple-600" />
-                  Personalized Recommendations
+                  <ExclamationTriangleIcon className="h-5 w-5 mr-2 text-amber-600" />
+                  Travel Advisories & Tips
                 </h2>
                 <div className="space-y-4">
                   {tripSuggestions.personalized_recommendations.map((rec, index) => (
                     <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium text-gray-900">{rec.title}</h3>
-                        <span className={`inline-flex px-2 py-1 text-xs rounded-full border ${getPriorityColor(rec.priority)}`}>
-                          {rec.priority}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-2">{rec.description}</p>
-                      <div className="flex justify-between items-center">
-                        <span className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">
-                          {rec.category}
-                        </span>
-                        <span className="text-xs text-gray-500">{rec.relevance}</span>
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 mt-1">
+                          {getCategoryIcon(rec.category)}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-medium text-gray-900">{rec.title}</h3>
+                            <span className={`inline-flex px-2 py-1 text-xs rounded-full border ${getPriorityColor(rec.priority)}`}>
+                              {rec.priority}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">{rec.description}</p>
+                          <div className="flex justify-between items-center">
+                            <span className={`inline-flex px-2 py-1 text-xs rounded-full border ${getCategoryColor(rec.category)}`}>
+                              {rec.category?.replace('_', ' ')}
+                            </span>
+                            <span className="text-xs text-gray-500">{rec.relevance}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
