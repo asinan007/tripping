@@ -142,6 +142,33 @@ const CreateTrip = () => {
     navigate(`/trip/${createdTrip.id}`);
   };
 
+  const handleAddToItinerary = async (activity) => {
+    setAddingActivities(prev => new Set([...prev, activity.name]));
+    
+    try {
+      await api.post(`/api/trips/${createdTrip.id}/itinerary/add-activity`, {
+        name: activity.name,
+        description: activity.description,
+        category: activity.category,
+        duration: activity.duration,
+        cost: activity.cost,
+        location: activity.location,
+        day: 1 // Default to day 1, user can organize later
+      });
+      
+      toast.success(`Added "${activity.name}" to itinerary!`);
+    } catch (error) {
+      toast.error('Failed to add activity to itinerary');
+      console.error('Error adding activity:', error);
+    } finally {
+      setAddingActivities(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(activity.name);
+        return newSet;
+      });
+    }
+  };
+
   const getCategoryColor = (category) => {
     switch (category) {
       case 'adventure': return 'bg-orange-100 text-orange-800 border-orange-300';
