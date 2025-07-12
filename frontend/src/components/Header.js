@@ -168,7 +168,7 @@ const Header = () => {
             }`}
           >
             <PlusIcon className="w-5 h-5" />
-            <span>New Trip</span>
+            <span>Plan Trip</span>
           </Link>
           
           <Link
