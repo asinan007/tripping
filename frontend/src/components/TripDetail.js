@@ -331,6 +331,14 @@ const TripDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Invite Modal */}
+      <InviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        tripId={trip?.id}
+        tripTitle={trip?.title}
+      />
     </div>
   );
 };
