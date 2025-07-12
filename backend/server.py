@@ -202,24 +202,53 @@ async def get_destination_suggestions(preferences: str) -> List[Dict]:
         return []
     
     try:
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-2.0-flash')
         prompt = f"""
         Based on these travel preferences: {preferences}
         
-        Suggest 5 travel destinations with the following information for each:
-        - Name of destination
-        - Country
-        - Brief description (2-3 sentences)
-        - Best time to visit
-        - Key activities
-        - Approximate budget range
+        Suggest 5 travel destinations. For each destination, provide exactly this JSON structure:
+        {{
+            "name": "City Name",
+            "country": "Country Name", 
+            "description": "Brief 2-3 sentence description",
+            "bestTime": "Best time to visit",
+            "keyActivities": ["activity1", "activity2", "activity3"],
+            "budgetRange": "Budget range (e.g., $1000-2000 per person)"
+        }}
         
-        Return the response in JSON format as an array of objects.
+        Return ONLY a valid JSON array with exactly 5 destinations. Do not include any other text or markdown formatting.
         """
         
         response = model.generate_content(prompt)
-        # Parse the response and return structured data
-        return json.loads(response.text)
+        response_text = response.text.strip()
+        
+        # Remove any markdown formatting if present
+        if response_text.startswith('```json'):
+            response_text = response_text.replace('```json', '').replace('```', '').strip()
+        
+        # Parse the JSON response
+        suggestions = json.loads(response_text)
+        
+        # Ensure it's a list
+        if isinstance(suggestions, dict):
+            suggestions = [suggestions]
+        
+        return suggestions[:5]  # Limit to 5 suggestions
+        
+    except json.JSONDecodeError as e:
+        print(f"JSON parsing error: {e}")
+        print(f"Raw response: {response.text}")
+        # Return fallback suggestions
+        return [
+            {
+                "name": "Tokyo",
+                "country": "Japan",
+                "description": "A vibrant metropolis blending traditional culture with modern innovation. Experience world-class cuisine, historic temples, and bustling city life.",
+                "bestTime": "March-May and September-November",
+                "keyActivities": ["Temple visits", "Sushi experiences", "Shopping in Shibuya"],
+                "budgetRange": "$1500-3000 per person"
+            }
+        ]
     except Exception as e:
         print(f"AI suggestion error: {e}")
         return []
@@ -230,23 +259,53 @@ async def get_activity_suggestions(destination: str) -> List[Dict]:
         return []
     
     try:
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-2.0-flash')
         prompt = f"""
         For the destination: {destination}
         
-        Suggest 10 activities/attractions with the following information:
-        - Name of activity
-        - Description
-        - Category (adventure, cultural, food, shopping, nature, etc.)
-        - Approximate duration
-        - Estimated cost range
-        - Best time to do this activity
+        Suggest 8 activities/attractions. For each activity, provide exactly this JSON structure:
+        {{
+            "name": "Activity Name",
+            "description": "Brief description of the activity",
+            "category": "adventure|cultural|food|shopping|nature|entertainment|historical",
+            "duration": "Duration (e.g., 2-3 hours, Half day, Full day)",
+            "cost": "Cost range (e.g., $20-50, Free, $100+)",
+            "bestTime": "Best time to do this activity"
+        }}
         
-        Return the response in JSON format as an array of objects.
+        Return ONLY a valid JSON array with exactly 8 activities. Do not include any other text or markdown formatting.
         """
         
         response = model.generate_content(prompt)
-        return json.loads(response.text)
+        response_text = response.text.strip()
+        
+        # Remove any markdown formatting if present
+        if response_text.startswith('```json'):
+            response_text = response_text.replace('```json', '').replace('```', '').strip()
+        
+        # Parse the JSON response
+        suggestions = json.loads(response_text)
+        
+        # Ensure it's a list
+        if isinstance(suggestions, dict):
+            suggestions = [suggestions]
+            
+        return suggestions[:8]  # Limit to 8 suggestions
+        
+    except json.JSONDecodeError as e:
+        print(f"JSON parsing error: {e}")
+        print(f"Raw response: {response.text}")
+        # Return fallback suggestions
+        return [
+            {
+                "name": "Local Food Tour",
+                "description": "Explore authentic local cuisine with a guided food tour",
+                "category": "food",
+                "duration": "3-4 hours",
+                "cost": "$50-80",
+                "bestTime": "Evening"
+            }
+        ]
     except Exception as e:
         print(f"AI suggestion error: {e}")
         return []
