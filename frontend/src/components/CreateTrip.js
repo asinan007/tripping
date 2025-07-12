@@ -93,6 +93,8 @@ const CreateTrip = () => {
       case 'nature': return 'bg-green-100 text-green-800 border-green-300';
       case 'entertainment': return 'bg-pink-100 text-pink-800 border-pink-300';
       case 'historical': return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'shopping': return 'bg-indigo-100 text-indigo-800 border-indigo-300';
+      case 'nightlife': return 'bg-red-100 text-red-800 border-red-300';
       default: return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
@@ -103,6 +105,21 @@ const CreateTrip = () => {
       case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
       case 'low': return 'bg-green-100 text-green-800 border-green-300';
       default: return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  const getCategoryIcon = (category) => {
+    switch (category) {
+      case 'advisory':
+      case 'warning':
+        return <ExclamationTriangleIcon className="h-5 w-5 text-amber-600" />;
+      case 'tip':
+      case 'recommendation':
+        return <InformationCircleIcon className="h-5 w-5 text-blue-600" />;
+      case 'cultural_insight':
+        return <SparklesIcon className="h-5 w-5 text-purple-600" />;
+      default:
+        return <InformationCircleIcon className="h-5 w-5 text-gray-600" />;
     }
   };
 
