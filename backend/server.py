@@ -314,6 +314,61 @@ async def get_activity_suggestions(destination: str) -> List[Dict]:
         print(f"AI suggestion error: {e}")
         return []
 
+async def get_personalized_suggestions(context: str) -> List[Dict]:
+    """Get personalized trip suggestions based on context"""
+    if not GEMINI_API_KEY:
+        return []
+    
+    try:
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        prompt = f"""
+        Based on this trip context: {context}
+        
+        Suggest 5 personalized recommendations. For each suggestion, provide exactly this JSON structure:
+        {{
+            "title": "Suggestion title",
+            "description": "Detailed description of the suggestion",
+            "category": "tip|activity|warning|recommendation",
+            "priority": "high|medium|low",
+            "relevance": "Brief explanation of why this is relevant to the trip context"
+        }}
+        
+        Return ONLY a valid JSON array with exactly 5 suggestions. Do not include any other text or markdown formatting.
+        """
+        
+        response = model.generate_content(prompt)
+        response_text = response.text.strip()
+        
+        # Remove any markdown formatting if present
+        if response_text.startswith('```json'):
+            response_text = response_text.replace('```json', '').replace('```', '').strip()
+        
+        # Parse the JSON response
+        suggestions = json.loads(response_text)
+        
+        # Ensure it's a list
+        if isinstance(suggestions, dict):
+            suggestions = [suggestions]
+            
+        return suggestions[:5]  # Limit to 5 suggestions
+        
+    except json.JSONDecodeError as e:
+        print(f"JSON parsing error: {e}")
+        print(f"Raw response: {response.text}")
+        # Return fallback suggestions
+        return [
+            {
+                "title": "Travel Insurance",
+                "description": "Consider getting comprehensive travel insurance for your trip",
+                "category": "tip",
+                "priority": "high",
+                "relevance": "Important for any international travel"
+            }
+        ]
+    except Exception as e:
+        print(f"AI suggestion error: {e}")
+        return []
+
 # API Routes
 
 @app.get("/")
