@@ -160,11 +160,12 @@ class Invitation(InvitationBase):
 
 # Utility functions
 def create_jwt_token(user_id: str) -> str:
+    from jose import jwt as jose_jwt
     payload = {
         "user_id": user_id,
         "exp": datetime.utcnow() + timedelta(days=7)
     }
-    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return jose_jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 def verify_jwt_token(token: str) -> Optional[str]:
     try:
