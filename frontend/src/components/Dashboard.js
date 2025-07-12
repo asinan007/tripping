@@ -185,7 +185,7 @@ const Dashboard = () => {
           <div className="flex items-center">
             <PlusIcon className="h-8 w-8 mr-4" />
             <div>
-              <div className="text-lg font-semibold">Create New Trip</div>
+              <div className="text-lg font-semibold">Plan New Trip</div>
               <div className="text-sm opacity-90">Start planning your next adventure</div>
             </div>
           </div>
