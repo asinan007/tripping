@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrips } from '../context/TripsContext';
-import { CalendarIcon, MapPinIcon, UsersIcon, SparklesIcon, CheckIcon, PlusIcon, ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, MapPinIcon, UsersIcon, SparklesIcon, CheckIcon, PlusIcon, ExclamationTriangleIcon, InformationCircleIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import toast from 'react-hot-toast';
