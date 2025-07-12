@@ -232,7 +232,7 @@ const Dashboard = () => {
                 className="btn btn-primary"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />
-                Create Your First Trip
+                Plan Your First Trip
               </Link>
             </div>
           ) : (
