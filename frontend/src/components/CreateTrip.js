@@ -388,8 +388,8 @@ const CreateTrip = () => {
             </h3>
             <ul className="text-sm text-blue-700 space-y-1">
               <li>• Add destination details to get activity suggestions automatically</li>
-              <li>• Include trip description for personalized recommendations</li>
-              <li>• Our AI will suggest activities, tips, and local experiences</li>
+              <li>• Include trip description for personalized recommendations and travel advisories</li>
+              <li>• Add suggested activities directly to your itinerary</li>
               <li>• Invite friends and family to collaborate on planning</li>
               <li>• Upload photos during your trip to create beautiful memories</li>
             </ul>
