@@ -268,16 +268,18 @@ async def get_activity_suggestions(destination: str) -> List[Dict]:
         prompt = f"""
         For the destination: {destination}
         
-        Suggest 8 activities/attractions. For each activity, provide exactly this JSON structure:
+        Suggest 8 ACTIVITIES and ATTRACTIONS only (no travel advisories or tips). For each activity, provide exactly this JSON structure:
         {{
             "name": "Activity Name",
-            "description": "Brief description of the activity",
-            "category": "adventure|cultural|food|shopping|nature|entertainment|historical",
+            "description": "Brief description of the activity or attraction",
+            "category": "adventure|cultural|food|shopping|nature|entertainment|historical|nightlife",
             "duration": "Duration (e.g., 2-3 hours, Half day, Full day)",
             "cost": "Cost range (e.g., $20-50, Free, $100+)",
-            "bestTime": "Best time to do this activity"
+            "bestTime": "Best time to do this activity",
+            "location": "Specific area/neighborhood in the city"
         }}
         
+        Focus ONLY on things to do, places to visit, and experiences. Do NOT include travel tips, advisories, or general recommendations.
         Return ONLY a valid JSON array with exactly 8 activities. Do not include any other text or markdown formatting.
         """
         
@@ -308,7 +310,8 @@ async def get_activity_suggestions(destination: str) -> List[Dict]:
                 "category": "food",
                 "duration": "3-4 hours",
                 "cost": "$50-80",
-                "bestTime": "Evening"
+                "bestTime": "Evening",
+                "location": "City Center"
             }
         ]
     except Exception as e:
@@ -329,10 +332,16 @@ async def get_personalized_suggestions(context: str) -> List[Dict]:
         {{
             "title": "Suggestion title",
             "description": "Detailed description of the suggestion",
-            "category": "tip|activity|warning|recommendation",
+            "category": "tip|advisory|recommendation|warning|cultural_insight",
             "priority": "high|medium|low",
             "relevance": "Brief explanation of why this is relevant to the trip context"
         }}
+        
+        Include a mix of:
+        - Travel advisories and safety tips (category: "advisory")
+        - Cultural insights and etiquette (category: "cultural_insight") 
+        - General travel recommendations (category: "recommendation")
+        - Important tips (category: "tip")
         
         Return ONLY a valid JSON array with exactly 5 suggestions. Do not include any other text or markdown formatting.
         """
@@ -361,7 +370,7 @@ async def get_personalized_suggestions(context: str) -> List[Dict]:
             {
                 "title": "Travel Insurance",
                 "description": "Consider getting comprehensive travel insurance for your trip",
-                "category": "tip",
+                "category": "advisory",
                 "priority": "high",
                 "relevance": "Important for any international travel"
             }
