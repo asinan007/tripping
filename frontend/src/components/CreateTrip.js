@@ -47,6 +47,11 @@ const CreateTrip = () => {
       return;
     }
 
+    if (!formData.destination_city.trim() || !formData.destination_country.trim()) {
+      toast.error('Please enter both destination city and country for AI suggestions');
+      return;
+    }
+
     setLoading(true);
     try {
       const tripData = {
