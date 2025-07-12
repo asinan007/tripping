@@ -191,7 +191,8 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         "name": user["name"],
         "email": user["email"],
         "avatar": user.get("avatar"),
-        "provider": user.get("provider")
+        "provider": user.get("provider"),
+        "created_at": user.get("created_at", datetime.utcnow())
     }
 
 # AI Helper Functions
