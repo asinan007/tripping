@@ -12,6 +12,7 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
+import InvitationBanner from './InvitationBanner';
 
 const Dashboard = () => {
   const { trips, loading, error } = useTrips();
