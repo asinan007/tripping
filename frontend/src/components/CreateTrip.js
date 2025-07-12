@@ -111,6 +111,33 @@ const CreateTrip = () => {
     }
   };
 
+  const generateFlightSearchUrl = () => {
+    if (!formData.departure_city || !formData.destination_city || !formData.start_date) {
+      return null;
+    }
+
+    const departureDate = formData.start_date.toISOString().split('T')[0];
+    const returnDate = formData.end_date ? formData.end_date.toISOString().split('T')[0] : null;
+    
+    // Google Flights URL format
+    const baseUrl = 'https://www.google.com/travel/flights';
+    const params = new URLSearchParams({
+      q: `flights from ${formData.departure_city} to ${formData.destination_city}`,
+      curr: 'USD',
+      hl: 'en'
+    });
+
+    // Add dates if available
+    if (departureDate) {
+      params.append('departure', departureDate);
+    }
+    if (returnDate) {
+      params.append('return', returnDate);
+    }
+
+    return `${baseUrl}?${params.toString()}`;
+  };
+
   const handleContinueToTrip = () => {
     navigate(`/trip/${createdTrip.id}`);
   };
