@@ -82,7 +82,7 @@ const Header = () => {
                 }`}
               >
                 <PlusIcon className="w-4 h-4" />
-                <span>New Trip</span>
+                <span>Plan Trip</span>
               </Link>
               
               <Link
