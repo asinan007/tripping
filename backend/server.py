@@ -96,6 +96,7 @@ class Trip(TripBase):
     participants: List[str] = []
     created_at: datetime
     updated_at: datetime
+    ai_suggestions: Optional[Dict[str, Any]] = None
 
 class DestinationBase(BaseModel):
     name: str
