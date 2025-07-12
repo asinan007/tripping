@@ -388,6 +388,64 @@ const CreateTrip = () => {
             </div>
           </div>
 
+          {/* Ticket Status */}
+          <div className="form-group">
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="has_tickets"
+                name="has_tickets"
+                checked={formData.has_tickets}
+                onChange={handleInputChange}
+                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="has_tickets" className="form-label mb-0">
+                I have already purchased my tickets
+              </label>
+            </div>
+          </div>
+
+          {/* Departure Location (only if tickets not purchased) */}
+          {!formData.has_tickets && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50 p-4 rounded-lg">
+              <div className="form-group mb-0">
+                <label htmlFor="departure_city" className="form-label">
+                  <GlobeAltIcon className="h-4 w-4 inline mr-1" />
+                  Departure City *
+                </label>
+                <input
+                  type="text"
+                  id="departure_city"
+                  name="departure_city"
+                  value={formData.departure_city}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="e.g., New York"
+                  required={!formData.has_tickets}
+                />
+              </div>
+
+              <div className="form-group mb-0">
+                <label htmlFor="departure_country" className="form-label">
+                  Departure Country *
+                </label>
+                <input
+                  type="text"
+                  id="departure_country"
+                  name="departure_country"
+                  value={formData.departure_country}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="e.g., USA"
+                  required={!formData.has_tickets}
+                />
+              </div>
+              <div className="col-span-full text-sm text-blue-700">
+                💡 We'll help you find flight options from your location to the destination
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
           <div className="flex justify-end space-x-3 pt-4">
             <button
