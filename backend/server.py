@@ -14,6 +14,10 @@ from google.cloud import storage
 import json
 import uuid
 from collections import defaultdict
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Initialize FastAPI app
 app = FastAPI(title="Tripping - Trip Planning App", version="1.0.0")
