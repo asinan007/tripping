@@ -536,7 +536,64 @@ async def delete_trip(trip_id: str, current_user: Dict = Depends(get_current_use
     
     return {"message": "Trip deleted successfully"}
 
-# Trip invitation routes
+# Itinerary management routes
+@app.post("/api/trips/{trip_id}/itinerary/add-activity")
+async def add_activity_to_itinerary(
+    trip_id: str,
+    activity_data: Dict[str, Any],
+    current_user: Dict = Depends(get_current_user)
+):
+    """Add an activity to the trip itinerary"""
+    trip = db.trips.find_one({"_id": ObjectId(trip_id), "participants": current_user["id"]})
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    
+    activity = {
+        "id": str(uuid.uuid4()),
+        "name": activity_data["name"],
+        "description": activity_data.get("description", ""),
+        "category": activity_data.get("category", ""),
+        "duration": activity_data.get("duration", ""),
+        "cost": activity_data.get("cost", ""),
+        "location": activity_data.get("location", ""),
+        "day": activity_data.get("day", 1),
+        "time": activity_data.get("time", ""),
+        "added_at": datetime.utcnow(),
+        "added_by": current_user["id"]
+    }
+    
+    # Add to trip's itinerary
+    db.trips.update_one(
+        {"_id": ObjectId(trip_id)},
+        {"$push": {"itinerary": activity}, "$set": {"updated_at": datetime.utcnow()}}
+    )
+    
+    # Broadcast to WebSocket connections
+    await manager.broadcast_to_trip(
+        json.dumps({
+            "type": "activity_added",
+            "trip_id": trip_id,
+            "activity": activity
+        }),
+        trip_id
+    )
+    
+    return {
+        "message": "Activity added to itinerary",
+        "activity": activity
+    }
+
+@app.get("/api/trips/{trip_id}/itinerary")
+async def get_trip_itinerary(trip_id: str, current_user: Dict = Depends(get_current_user)):
+    """Get the trip itinerary"""
+    trip = db.trips.find_one({"_id": ObjectId(trip_id), "participants": current_user["id"]})
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    
+    return {
+        "itinerary": trip.get("itinerary", []),
+        "trip_title": trip["title"]
+    }
 @app.post("/api/trips/{trip_id}/invite")
 async def invite_to_trip(
     trip_id: str, 
